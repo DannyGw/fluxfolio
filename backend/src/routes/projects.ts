@@ -1,0 +1,85 @@
+import { Router, Request, Response } from "express";
+import { prisma } from "../index";
+
+const router = Router();
+
+// GET /api/projects — list all projects
+router.get("/", async (_req: Request, res: Response) => {
+  try {
+    const projects = await prisma.project.findMany({
+      orderBy: [{ order: "asc" }, { createdAt: "desc" }],
+    });
+    res.json(projects);
+  } catch (error) {
+    console.error("Error fetching projects:", error);
+    res.status(500).json({ error: "Failed to fetch projects" });
+  }
+});
+
+// GET /api/projects/featured — get featured projects
+router.get("/featured", async (_req: Request, res: Response) => {
+  try {
+    const projects = await prisma.project.findMany({
+      where: { featured: true },
+      orderBy: { order: "asc" },
+    });
+    res.json(projects);
+  } catch (error) {
+    console.error("Error fetching featured projects:", error);
+    res.status(500).json({ error: "Failed to fetch featured projects" });
+  }
+});
+
+// GET /api/projects/:slug — get single project by slug
+router.get("/:slug", async (req: Request, res: Response) => {
+  try {
+    const project = await prisma.project.findUnique({
+      where: { slug: req.params.slug },
+    });
+    if (!project) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+    res.json(project);
+  } catch (error) {
+    console.error("Error fetching project:", error);
+    res.status(500).json({ error: "Failed to fetch project" });
+  }
+});
+
+// POST /api/projects — create a new project
+router.post("/", async (req: Request, res: Response) => {
+  try {
+    const project = await prisma.project.create({ data: req.body });
+    res.status(201).json(project);
+  } catch (error) {
+    console.error("Error creating project:", error);
+    res.status(500).json({ error: "Failed to create project" });
+  }
+});
+
+// PUT /api/projects/:id — update a project
+router.put("/:id", async (req: Request, res: Response) => {
+  try {
+    const project = await prisma.project.update({
+      where: { id: req.params.id },
+      data: req.body,
+    });
+    res.json(project);
+  } catch (error) {
+    console.error("Error updating project:", error);
+    res.status(500).json({ error: "Failed to update project" });
+  }
+});
+
+// DELETE /api/projects/:id — delete a project
+router.delete("/:id", async (req: Request, res: Response) => {
+  try {
+    await prisma.project.delete({ where: { id: req.params.id } });
+    res.status(204).send();
+  } catch (error) {
+    console.error("Error deleting project:", error);
+    res.status(500).json({ error: "Failed to delete project" });
+  }
+});
+
+export default router;
