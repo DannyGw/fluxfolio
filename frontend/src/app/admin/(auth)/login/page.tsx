@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, FormEvent, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
@@ -9,23 +9,23 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
 export default function AdminLoginPage() {
   const { login } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Handle OAuth callback with token in URL
+  // Handle OAuth callback with token in URL (use window.location to avoid Suspense)
   useEffect(() => {
-    const token = searchParams.get("token");
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
     if (token) {
       localStorage.setItem("fluxfolio-token", token);
       router.push("/admin");
     }
-    const err = searchParams.get("error");
+    const err = params.get("error");
     if (err) {
       setError("Google sign-in failed. Please try again.");
     }
-  }, [searchParams, router]);
+  }, [router]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
