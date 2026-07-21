@@ -16,23 +16,29 @@ const navItems = [
 export default function AdminSidebar() {
   const pathname = usePathname();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [audioCtx, setAudioCtx] = useState<AudioContext | null>(null);
 
-  // Play notification sound using Web Audio API
+  // Play notification sound using Web Audio API (handles autoplay policy)
   const playNotification = () => {
     try {
-      const ctx = new AudioContext();
+      const ctx = audioCtx || new (window.AudioContext || (window as any).webkitAudioContext)();
+      if (!audioCtx) setAudioCtx(ctx);
+      if (ctx.state === "suspended") ctx.resume();
+
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.connect(gain);
       gain.connect(ctx.destination);
-      osc.frequency.value = 880;
+      // Two-tone: higher then lower
+      osc.frequency.setValueAtTime(1047, ctx.currentTime);
+      osc.frequency.setValueAtTime(784, ctx.currentTime + 0.15);
       osc.type = "sine";
-      gain.gain.setValueAtTime(0.3, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+      gain.gain.setValueAtTime(0.5, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
       osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.3);
+      osc.stop(ctx.currentTime + 0.4);
     } catch {
-      // Audio not available — silently skip
+      // Audio not available
     }
   };
 
@@ -47,10 +53,18 @@ export default function AdminSidebar() {
   };
 
   useEffect(() => {
-    // Request notification permission on mount
     if (typeof Notification !== "undefined" && Notification.permission === "default") {
       Notification.requestPermission();
     }
+
+    // Unlock AudioContext on first user click
+    const unlock = () => {
+      if (audioCtx && audioCtx.state === "suspended") {
+        audioCtx.resume();
+      }
+      document.removeEventListener("click", unlock);
+    };
+    document.addEventListener("click", unlock);
 
     let prevCount = 0;
 
@@ -66,13 +80,16 @@ export default function AdminSidebar() {
         }
         prevCount = count;
       } catch {
-        // Not authenticated yet — ignore
+        // Not authenticated yet
       }
     };
     fetchUnread();
     const interval = setInterval(fetchUnread, 10_000);
-    return () => clearInterval(interval);
-  }, []);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("click", unlock);
+    };
+  }, [audioCtx]);
 
   return (
     <aside className="hidden sm:flex flex-col w-64 min-h-screen border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 sticky top-0">

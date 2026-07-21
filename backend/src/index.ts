@@ -9,6 +9,7 @@ import contactRoutes from "./routes/contact";
 import uploadRoutes from "./routes/upload";
 import authRoutes from "./routes/auth";
 import blogRoutes from "./routes/blog";
+import { initPassport } from "./middleware/passport";
 
 export const prisma = new PrismaClient();
 
@@ -43,6 +44,9 @@ app.use("/api/contact", contactRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/blog", blogRoutes);
+
+// Google OAuth (registers /api/auth/google and /api/auth/google/callback)
+initPassport(app);
 
 // Health check
 app.get("/api/health", (_req, res) => {
