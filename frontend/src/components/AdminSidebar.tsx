@@ -148,13 +148,25 @@ export default function AdminSidebar() {
           );
         })}
       </nav>
-      <div className="mt-auto pt-6 border-t border-zinc-200 dark:border-zinc-800">
+      <div className="mt-auto pt-6 border-t border-zinc-200 dark:border-zinc-800 space-y-2">
         <Link href="/" className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors flex items-center gap-2">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
           Back to site
         </Link>
+        <button
+          onClick={() => {
+            localStorage.removeItem("fluxfolio-token");
+            window.location.href = "/admin/login";
+          }}
+          className="text-sm text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 transition-colors flex items-center gap-2 w-full"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          Sign out
+        </button>
       </div>
     </aside>
   );
