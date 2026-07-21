@@ -23,8 +23,9 @@ async function authenticatedFetch<T>(
   const headers: Record<string, string> = {
     ...(options.headers as Record<string, string>),
   };
-  // Don't set Content-Type for FormData (browser sets it with boundary)
-  if (!(options.body instanceof FormData)) {
+  // Only set Content-Type when there's a JSON body to send
+  const hasBody = options.body !== undefined && options.body !== null;
+  if (hasBody && !(options.body instanceof FormData)) {
     headers["Content-Type"] = "application/json";
   }
   if (token) {
