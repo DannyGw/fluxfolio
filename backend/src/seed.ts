@@ -148,7 +148,7 @@ A robust backend API built for e-commerce applications.
   const hashedPassword = await bcrypt.hash("admin123", 12);
   await prisma.user.upsert({
     where: { email: "admin@fluxfolio.dev" },
-    update: { password: hashedPassword, name: "Admin" },
+    update: { name: "Admin" }, // Don't reset password on re-deploy
     create: {
       email: "admin@fluxfolio.dev",
       password: hashedPassword,

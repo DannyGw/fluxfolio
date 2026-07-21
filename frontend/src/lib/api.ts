@@ -6,6 +6,14 @@ function getAuthToken(): string | null {
   return localStorage.getItem("fluxfolio-token");
 }
 
+/** Redirect to login when token expires */
+function redirectToLogin(): void {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("fluxfolio-token");
+    window.location.href = "/admin/login";
+  }
+}
+
 /** Authenticated fetch helper — sends JWT token in Authorization header */
 async function authenticatedFetch<T>(
   endpoint: string,
@@ -13,9 +21,12 @@ async function authenticatedFetch<T>(
 ): Promise<T> {
   const token = getAuthToken();
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
     ...(options.headers as Record<string, string>),
   };
+  // Don't set Content-Type for FormData (browser sets it with boundary)
+  if (!(options.body instanceof FormData)) {
+    headers["Content-Type"] = "application/json";
+  }
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
@@ -23,6 +34,10 @@ async function authenticatedFetch<T>(
     ...options,
     headers,
   });
+  if (res.status === 401) {
+    redirectToLogin();
+    throw new Error("Session expired — redirecting to login");
+  }
   if (!res.ok) {
     throw new Error(`API error: ${res.status} ${res.statusText}`);
   }
@@ -146,7 +161,7 @@ export async function submitContact(data: {
 }
 
 export async function getContactMessages(): Promise<ContactMessage[]> {
-  return fetchJSON<ContactMessage[]>("/contact");
+  return authenticatedFetch<ContactMessage[]>("/contact");
 }
 
 export async function markMessageRead(id: string): Promise<ContactMessage> {

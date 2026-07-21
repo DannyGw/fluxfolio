@@ -1,6 +1,9 @@
 import { Router, Response } from "express";
 import { prisma } from "../index";
 import { requireAuth, AuthRequest } from "../middleware/auth";
+import { pick } from "../lib/pick";
+
+const profileFields = ["name", "title", "bio", "avatarUrl", "resumeUrl", "email", "github", "linkedin", "twitter", "website", "skills"] as const;
 
 const router = Router();
 
@@ -21,9 +24,10 @@ router.get("/", async (_req: AuthRequest, res: Response) => {
 // PUT /api/profile/:id — update the profile (admin only)
 router.put("/:id", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
+    const data = pick(req.body, profileFields) as any;
     const profile = await prisma.profile.update({
       where: { id: req.params.id },
-      data: req.body,
+      data,
     });
     res.json(profile);
   } catch (error) {

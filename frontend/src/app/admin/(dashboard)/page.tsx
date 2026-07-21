@@ -1,27 +1,35 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { getProjects, getProfile, getContactMessages } from "@/lib/api";
 
-export default async function AdminDashboard() {
-  let projects: any[] = [];
-  let profile: any = null;
-  let messages: any[] = [];
+export default function AdminDashboard() {
+  const [projects, setProjects] = useState<any[]>([]);
+  const [profile, setProfile] = useState<any>(null);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  try {
-    [projects, profile, messages] = await Promise.all([
-      getProjects(),
-      getProfile(),
-      getContactMessages(),
-    ]);
-  } catch (error) {
-    console.error("Failed to fetch admin data:", error);
-  }
+  useEffect(() => {
+    Promise.all([
+      getProjects().catch(() => []),
+      getProfile().catch(() => null),
+      getContactMessages().catch(() => []),
+    ])
+      .then(([p, pr, m]) => {
+        setProjects(p);
+        setProfile(pr);
+        setMessages(m);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
-  const unreadMessages = messages.filter((m) => !m.read).length;
+  const unreadMessages = messages.filter((m: any) => !m.read).length;
 
   const stats = [
-    { label: "Projects", value: projects.length, href: "/admin/projects", color: "text-violet-600" },
-    { label: "Unread Messages", value: unreadMessages, href: "/admin/messages", color: "text-amber-600" },
-    { label: "Skills", value: profile?.skills?.length || 0, href: "/admin/profile", color: "text-emerald-600" },
+    { label: "Projects", value: loading ? "..." : projects.length, href: "/admin/projects", color: "text-violet-600" },
+    { label: "Unread Messages", value: loading ? "..." : unreadMessages, href: "/admin/messages", color: "text-amber-600" },
+    { label: "Skills", value: loading ? "..." : profile?.skills?.length || 0, href: "/admin/profile", color: "text-emerald-600" },
   ];
 
   return (

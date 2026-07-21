@@ -46,6 +46,19 @@ app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 FluxFolio API running on http://localhost:${PORT}`);
+});
+
+// Graceful shutdown
+process.on("SIGTERM", async () => {
+  console.log("SIGTERM received — shutting down gracefully...");
+  await prisma.$disconnect();
+  server.close(() => process.exit(0));
+});
+
+process.on("SIGINT", async () => {
+  console.log("SIGINT received — shutting down gracefully...");
+  await prisma.$disconnect();
+  server.close(() => process.exit(0));
 });

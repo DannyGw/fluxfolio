@@ -39,6 +39,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (u) setUser(u);
           else localStorage.removeItem("fluxfolio-token");
         })
+        .catch(() => {
+          localStorage.removeItem("fluxfolio-token");
+        })
         .finally(() => setLoading(false));
     } else {
       setLoading(false);

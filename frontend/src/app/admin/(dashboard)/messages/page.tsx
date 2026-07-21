@@ -1,12 +1,26 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { getContactMessages } from "@/lib/api";
 import MessageActions from "./MessageActions";
 
-export default async function AdminMessagesPage() {
-  let messages: any[] = [];
-  try {
-    messages = await getContactMessages();
-  } catch (error) {
-    console.error("Failed to fetch messages:", error);
+export default function AdminMessagesPage() {
+  const [messages, setMessages] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getContactMessages()
+      .then(setMessages)
+      .catch(() => setMessages([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="animate-spin w-8 h-8 border-2 border-violet-600 border-t-transparent rounded-full" />
+      </div>
+    );
   }
 
   return (

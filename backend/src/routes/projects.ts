@@ -1,6 +1,9 @@
 import { Router, Request, Response } from "express";
 import { prisma } from "../index";
 import { requireAuth, AuthRequest } from "../middleware/auth";
+import { pick } from "../lib/pick";
+
+const projectFields = ["title", "slug", "description", "content", "techStack", "imageUrl", "liveUrl", "repoUrl", "featured", "order"] as const;
 
 const router = Router();
 
@@ -50,7 +53,8 @@ router.get("/:slug", async (req: Request, res: Response) => {
 // POST /api/projects — create a new project (admin only)
 router.post("/", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
-    const project = await prisma.project.create({ data: req.body });
+    const data = pick(req.body, projectFields) as any;
+    const project = await prisma.project.create({ data });
     res.status(201).json(project);
   } catch (error) {
     console.error("Error creating project:", error);
@@ -61,9 +65,10 @@ router.post("/", requireAuth, async (req: AuthRequest, res: Response) => {
 // PUT /api/projects/:id — update a project (admin only)
 router.put("/:id", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
+    const data = pick(req.body, projectFields) as any;
     const project = await prisma.project.update({
       where: { id: req.params.id },
-      data: req.body,
+      data,
     });
     res.json(project);
   } catch (error) {

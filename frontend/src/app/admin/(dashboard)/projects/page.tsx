@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { getProjects } from "@/lib/api";
 import DeleteButton from "./DeleteButton";
+import { getProjects } from "@/lib/api";
 
 export default async function AdminProjectsPage() {
   let projects: any[] = [];

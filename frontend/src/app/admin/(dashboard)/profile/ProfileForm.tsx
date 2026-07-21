@@ -46,6 +46,7 @@ export default function ProfileForm({ initial }: Props) {
       await updateProfile(initial.id, {
         ...form,
         avatarUrl: form.avatarUrl || null,
+        resumeUrl: form.resumeUrl || null,
         email: form.email || null,
         github: form.github || null,
         linkedin: form.linkedin || null,

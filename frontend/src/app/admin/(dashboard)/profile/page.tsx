@@ -5,8 +5,8 @@ export default async function AdminProfilePage() {
   let profile: any = null;
   try {
     profile = await getProfile();
-  } catch (error) {
-    console.error("Failed to fetch profile:", error);
+  } catch {
+    // Profile fetch fails gracefully — null check below handles it
   }
 
   if (!profile) {
