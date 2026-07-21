@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { prisma } from "../index";
+import { requireAuth, AuthRequest } from "../middleware/auth";
 
 const router = Router();
 
@@ -46,8 +47,8 @@ router.get("/:slug", async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/projects — create a new project
-router.post("/", async (req: Request, res: Response) => {
+// POST /api/projects — create a new project (admin only)
+router.post("/", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     const project = await prisma.project.create({ data: req.body });
     res.status(201).json(project);
@@ -57,8 +58,8 @@ router.post("/", async (req: Request, res: Response) => {
   }
 });
 
-// PUT /api/projects/:id — update a project
-router.put("/:id", async (req: Request, res: Response) => {
+// PUT /api/projects/:id — update a project (admin only)
+router.put("/:id", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     const project = await prisma.project.update({
       where: { id: req.params.id },
@@ -71,8 +72,8 @@ router.put("/:id", async (req: Request, res: Response) => {
   }
 });
 
-// DELETE /api/projects/:id — delete a project
-router.delete("/:id", async (req: Request, res: Response) => {
+// DELETE /api/projects/:id — delete a project (admin only)
+router.delete("/:id", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     await prisma.project.delete({ where: { id: req.params.id } });
     res.status(204).send();

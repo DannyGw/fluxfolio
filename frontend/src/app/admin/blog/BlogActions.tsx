@@ -1,19 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { deleteBlogPost } from "@/lib/api";
 
 export default function BlogActions({ id }: { id: string }) {
   const router = useRouter();
 
   const handleDelete = async () => {
     if (!confirm("Delete this post?")) return;
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
-    const token = localStorage.getItem("fluxfolio-token");
     try {
-      await fetch(`${API_URL}/blog/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await deleteBlogPost(id);
       router.refresh();
     } catch (error) {
       console.error("Failed to delete:", error);

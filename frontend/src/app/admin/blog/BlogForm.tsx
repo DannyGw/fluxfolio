@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, FormEvent } from "react";
+import { createBlogPost, updateBlogPost } from "@/lib/api";
 
 type Props = {
   initial?: {
@@ -18,7 +19,6 @@ type Props = {
 export default function BlogForm({ initial }: Props) {
   const router = useRouter();
   const isEditing = !!initial;
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
 
   const [form, setForm] = useState({
     title: initial?.title || "",
@@ -39,21 +39,12 @@ export default function BlogForm({ initial }: Props) {
       tags: form.tags.split(",").map((s) => s.trim()).filter(Boolean),
     };
 
-    const token = localStorage.getItem("fluxfolio-token");
-    const url = isEditing
-      ? `${API_URL}/blog/${initial!.id}`
-      : `${API_URL}/blog`;
-
     try {
-      const res = await fetch(url, {
-        method: isEditing ? "PUT" : "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error("Failed to save");
+      if (isEditing) {
+        await updateBlogPost(initial!.id, data);
+      } else {
+        await createBlogPost(data);
+      }
       router.push("/admin/blog");
       router.refresh();
     } catch (error) {

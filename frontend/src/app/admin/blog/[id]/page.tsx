@@ -1,32 +1,30 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { getPost, BlogPost } from "@/lib/api";
 import BlogForm from "../BlogForm";
 
-type BlogPost = {
-  id: string;
-  title: string;
-  slug: string;
-  excerpt: string;
-  content: string;
-  tags: string[];
-  published: boolean;
-};
+export default function EditBlogPostPage() {
+  const params = useParams();
+  const id = params.id as string;
+  const [post, setPost] = useState<BlogPost | null>(null);
+  const [loading, setLoading] = useState(true);
 
-type Props = { params: Promise<{ id: string }> };
+  useEffect(() => {
+    getPost(id)
+      .then(setPost)
+      .catch(() => setPost(null))
+      .finally(() => setLoading(false));
+  }, [id]);
 
-async function getPost(id: string): Promise<BlogPost | null> {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
-  try {
-    const res = await fetch(`${API_URL}/blog/all`, { cache: "no-store" });
-    if (!res.ok) return null;
-    const posts: BlogPost[] = await res.json();
-    return posts.find((p) => p.id === id) || null;
-  } catch {
-    return null;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="animate-spin w-8 h-8 border-2 border-violet-600 border-t-transparent rounded-full" />
+      </div>
+    );
   }
-}
-
-export default async function EditBlogPostPage({ params }: Props) {
-  const { id } = await params;
-  const post = await getPost(id);
 
   if (!post) {
     return (

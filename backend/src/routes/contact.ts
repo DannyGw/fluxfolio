@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { prisma } from "../index";
+import { requireAuth, AuthRequest } from "../middleware/auth";
 
 const router = Router();
 
@@ -23,8 +24,8 @@ router.post("/", async (req: Request, res: Response) => {
   }
 });
 
-// GET /api/contact — get all contact messages (for admin)
-router.get("/", async (_req: Request, res: Response) => {
+// GET /api/contact — get all contact messages (admin only)
+router.get("/", requireAuth, async (_req: AuthRequest, res: Response) => {
   try {
     const messages = await prisma.contactMessage.findMany({
       orderBy: { createdAt: "desc" },
@@ -36,8 +37,8 @@ router.get("/", async (_req: Request, res: Response) => {
   }
 });
 
-// PUT /api/contact/:id/read — mark message as read
-router.put("/:id/read", async (req: Request, res: Response) => {
+// PUT /api/contact/:id/read — mark message as read (admin only)
+router.put("/:id/read", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     const message = await prisma.contactMessage.update({
       where: { id: req.params.id },
@@ -50,8 +51,8 @@ router.put("/:id/read", async (req: Request, res: Response) => {
   }
 });
 
-// DELETE /api/contact/:id — delete a contact message
-router.delete("/:id", async (req: Request, res: Response) => {
+// DELETE /api/contact/:id — delete a contact message (admin only)
+router.delete("/:id", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     await prisma.contactMessage.delete({ where: { id: req.params.id } });
     res.status(204).send();

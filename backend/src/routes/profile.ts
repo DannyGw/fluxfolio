@@ -1,10 +1,11 @@
-import { Router, Request, Response } from "express";
+import { Router, Response } from "express";
 import { prisma } from "../index";
+import { requireAuth, AuthRequest } from "../middleware/auth";
 
 const router = Router();
 
 // GET /api/profile — get the profile (about me)
-router.get("/", async (_req: Request, res: Response) => {
+router.get("/", async (_req: AuthRequest, res: Response) => {
   try {
     const profile = await prisma.profile.findFirst();
     if (!profile) {
@@ -17,8 +18,8 @@ router.get("/", async (_req: Request, res: Response) => {
   }
 });
 
-// PUT /api/profile/:id — update the profile
-router.put("/:id", async (req: Request, res: Response) => {
+// PUT /api/profile/:id — update the profile (admin only)
+router.put("/:id", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     const profile = await prisma.profile.update({
       where: { id: req.params.id },

@@ -3,6 +3,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import crypto from "crypto";
+import { requireAuth, AuthRequest } from "../middleware/auth";
 
 const router = Router();
 
@@ -59,8 +60,8 @@ const resumeUpload = multer({
   },
 });
 
-// POST /api/upload — upload an image
-router.post("/", imageUpload.single("file"), (req: Request, res: Response) => {
+// POST /api/upload — upload an image (admin only)
+router.post("/", requireAuth, imageUpload.single("file"), (req: Request, res: Response) => {
   if (!req.file) {
     return res.status(400).json({ error: "No file uploaded" });
   }
@@ -68,8 +69,8 @@ router.post("/", imageUpload.single("file"), (req: Request, res: Response) => {
   res.json({ url, filename: req.file.filename });
 });
 
-// POST /api/upload/resume — upload a resume
-router.post("/resume", resumeUpload.single("file"), (req: Request, res: Response) => {
+// POST /api/upload/resume — upload a resume (admin only)
+router.post("/resume", requireAuth, resumeUpload.single("file"), (req: Request, res: Response) => {
   if (!req.file) {
     return res.status(400).json({ error: "No file uploaded" });
   }

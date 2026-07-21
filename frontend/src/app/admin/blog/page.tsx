@@ -1,4 +1,9 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { getPosts } from "@/lib/api";
+import BlogActions from "./BlogActions";
 
 type BlogPost = {
   id: string;
@@ -8,21 +13,24 @@ type BlogPost = {
   createdAt: string;
 };
 
-async function getPosts(): Promise<BlogPost[]> {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
-  try {
-    const res = await fetch(`${API_URL}/blog/all`, { cache: "no-store" });
-    if (!res.ok) return [];
-    return res.json();
-  } catch {
-    return [];
+export default function AdminBlogPage() {
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getPosts()
+      .then(setPosts)
+      .catch(() => setPosts([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="animate-spin w-8 h-8 border-2 border-violet-600 border-t-transparent rounded-full" />
+      </div>
+    );
   }
-}
-
-import BlogActions from "./BlogActions";
-
-export default async function AdminBlogPage() {
-  const posts = await getPosts();
 
   return (
     <div>
