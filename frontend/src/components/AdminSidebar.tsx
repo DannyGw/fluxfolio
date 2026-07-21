@@ -17,17 +17,60 @@ export default function AdminSidebar() {
   const pathname = usePathname();
   const [unreadCount, setUnreadCount] = useState(0);
 
+  // Play notification sound using Web Audio API
+  const playNotification = () => {
+    try {
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 880;
+      osc.type = "sine";
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.3);
+    } catch {
+      // Audio not available — silently skip
+    }
+  };
+
+  // Show browser notification
+  const showNotification = (count: number) => {
+    if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+      new Notification("FluxFolio", {
+        body: `${count} new message${count > 1 ? "s" : ""} received`,
+        icon: "/favicon.ico",
+      });
+    }
+  };
+
   useEffect(() => {
+    // Request notification permission on mount
+    if (typeof Notification !== "undefined" && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+
+    let prevCount = 0;
+
     const fetchUnread = async () => {
       try {
         const messages = await getContactMessages();
-        setUnreadCount(messages.filter((m) => !m.read).length);
+        const count = messages.filter((m: any) => !m.read).length;
+        setUnreadCount(count);
+
+        if (count > prevCount && prevCount > 0) {
+          playNotification();
+          showNotification(count - prevCount);
+        }
+        prevCount = count;
       } catch {
         // Not authenticated yet — ignore
       }
     };
     fetchUnread();
-    const interval = setInterval(fetchUnread, 30_000);
+    const interval = setInterval(fetchUnread, 10_000);
     return () => clearInterval(interval);
   }, []);
 

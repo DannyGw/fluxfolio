@@ -133,6 +133,9 @@ export type ContactMessage = {
   subject: string | null;
   message: string;
   read: boolean;
+  isAdmin: boolean;
+  parentId: string | null;
+  replies: ContactMessage[];
   createdAt: string;
 };
 
@@ -175,6 +178,16 @@ export async function markMessageRead(id: string): Promise<ContactMessage> {
 
 export async function deleteMessage(id: string): Promise<void> {
   await authenticatedFetch(`/contact/${id}`, { method: "DELETE" });
+}
+
+export async function replyToMessage(
+  id: string,
+  message: string
+): Promise<ContactMessage> {
+  return authenticatedFetch<ContactMessage>(`/contact/${id}/reply`, {
+    method: "POST",
+    body: JSON.stringify({ message }),
+  });
 }
 
 export async function createProject(

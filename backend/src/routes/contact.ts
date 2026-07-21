@@ -24,10 +24,50 @@ router.post("/", async (req: Request, res: Response) => {
   }
 });
 
-// GET /api/contact — get all contact messages (admin only)
+// POST /api/contact/:id/reply — admin reply to a contact message (admin only)
+router.post("/:id/reply", requireAuth, async (req: AuthRequest, res: Response) => {
+  try {
+    const { message } = req.body;
+    if (!message) {
+      return res.status(400).json({ error: "Message is required" });
+    }
+
+    const parent = await prisma.contactMessage.findUnique({
+      where: { id: req.params.id },
+    });
+    if (!parent) {
+      return res.status(404).json({ error: "Original message not found" });
+    }
+
+    const reply = await prisma.contactMessage.create({
+      data: {
+        name: "Admin",
+        email: parent.email,
+        subject: parent.subject ? `Re: ${parent.subject}` : null,
+        message,
+        isAdmin: true,
+        parentId: parent.id,
+        read: true,
+      },
+    });
+
+    res.status(201).json(reply);
+  } catch (error) {
+    console.error("Error creating reply:", error);
+    res.status(500).json({ error: "Failed to create reply" });
+  }
+});
+
+// GET /api/contact — get all top-level messages with their replies (admin only)
 router.get("/", requireAuth, async (_req: AuthRequest, res: Response) => {
   try {
     const messages = await prisma.contactMessage.findMany({
+      where: { parentId: null },
+      include: {
+        replies: {
+          orderBy: { createdAt: "asc" },
+        },
+      },
       orderBy: { createdAt: "desc" },
     });
     res.json(messages);

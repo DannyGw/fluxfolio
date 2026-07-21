@@ -69,5 +69,9 @@ model ContactMessage {
   subject   String?
   message   String   @db.Text
   read      Boolean  @default(false)
+  isAdmin   Boolean  @default(false)
+  parentId  String?
+  parent    ContactMessage? @relation("MessageReplies", fields: [parentId], references: [id])
+  replies   ContactMessage[] @relation("MessageReplies")
   createdAt DateTime @default(now())
 }
