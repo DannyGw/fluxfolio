@@ -6,14 +6,10 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🌱 Seeding database...");
 
-  // Clean existing data
-  await prisma.project.deleteMany();
-  await prisma.profile.deleteMany();
-  await prisma.user.deleteMany();
-  await prisma.blogPost.deleteMany();
-
-  // Seed Profile
-  await prisma.profile.create({
+  // Seed Profile (only if none exists)
+  const existingProfile = await prisma.profile.findFirst();
+  if (!existingProfile) {
+    await prisma.profile.create({
     data: {
       name: "Your Name",
       title: "Full Stack Developer",
@@ -40,7 +36,10 @@ When I'm not coding, you'll find me [insert hobby here] or [insert another hobby
         "Git",
       ],
     },
-  });
+  );
+  } else {
+    console.log("  - Profile already exists, skipping");
+  }
 
   // Seed Projects
   const projects = [
@@ -136,18 +135,27 @@ A robust backend API built for e-commerce applications.
   ];
 
   for (const project of projects) {
-    await prisma.project.create({ data: project });
+    const { slug, ...projectData } = project;
+    await prisma.project.upsert({
+      where: { slug },
+      update: projectData,
+      create: project,
+    });
   }
+  console.log(`  - ${projects.length} projects synced`);
 
-  // Seed Admin User
+  // Seed Admin User (upsert by email)
   const hashedPassword = await bcrypt.hash("admin123", 12);
-  await prisma.user.create({
-    data: {
+  await prisma.user.upsert({
+    where: { email: "admin@fluxfolio.dev" },
+    update: { password: hashedPassword, name: "Admin" },
+    create: {
       email: "admin@fluxfolio.dev",
       password: hashedPassword,
       name: "Admin",
     },
   });
+  console.log("  - Admin user synced (admin@fluxfolio.dev / admin123)");
 
   // Seed Blog Posts
   const blogPosts = [
@@ -211,14 +219,16 @@ Docker eliminates environment inconsistencies. With Docker Compose, I can spin u
   ];
 
   for (const post of blogPosts) {
-    await prisma.blogPost.create({ data: post });
+    const { slug, ...postData } = post;
+    await prisma.blogPost.upsert({
+      where: { slug },
+      update: postData,
+      create: post,
+    });
   }
+  console.log(`  - ${blogPosts.length} blog posts synced`);
 
   console.log("✅ Database seeded successfully!");
-  console.log(`  - 1 profile created`);
-  console.log(`  - ${projects.length} projects created`);
-  console.log(`  - 1 admin user created (admin@fluxfolio.dev / admin123)`);
-  console.log(`  - ${blogPosts.length} blog posts created`);
 }
 
 main()
