@@ -2,10 +2,27 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import ThemeToggle from "./ThemeToggle";
+
+const navLinks = [
+  { href: "/", label: "Home", exact: true },
+  { href: "/#projects", label: "Projects", exact: false },
+  { href: "/#about", label: "About", exact: false },
+  { href: "/blog", label: "Blog", exact: false },
+  { href: "/#contact", label: "Contact", exact: false },
+  { href: "/admin", label: "Admin", exact: false },
+];
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const pathname = usePathname();
+
+  const isActive = (href: string, exact?: boolean) => {
+    if (exact) return pathname === href;
+    if (href.startsWith("/#")) return pathname === "/";
+    return pathname.startsWith(href);
+  };
 
   return (
     <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/70 dark:bg-zinc-950/70 border-b border-zinc-200 dark:border-zinc-800">
@@ -21,42 +38,19 @@ export default function Header() {
 
           {/* Desktop Nav */}
           <nav className="hidden sm:flex items-center gap-6">
-            <Link
-              href="/"
-              className="text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
-            >
-              Home
-            </Link>
-            <Link
-              href="/#projects"
-              className="text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
-            >
-              Projects
-            </Link>
-            <Link
-              href="/#about"
-              className="text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
-            >
-              About
-            </Link>
-            <Link
-              href="/blog"
-              className="text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
-            >
-              Blog
-            </Link>
-            <Link
-              href="/#contact"
-              className="text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
-            >
-              Contact
-            </Link>
-            <Link
-              href="/admin"
-              className="text-sm font-medium text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 transition-colors"
-            >
-              Admin
-            </Link>
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`text-sm font-medium transition-colors ${
+                  isActive(link.href, link.exact)
+                    ? "text-violet-600 dark:text-violet-400"
+                    : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
             <ThemeToggle />
           </nav>
 
@@ -97,45 +91,28 @@ export default function Header() {
         {/* Mobile Nav */}
         {menuOpen && (
           <nav className="sm:hidden pb-4 border-t border-zinc-200 dark:border-zinc-800 pt-4 flex flex-col gap-3">
-            <Link
-              href="/"
-              onClick={() => setMenuOpen(false)}
-              className="text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-            >
-              Home
-            </Link>
-            <Link
-              href="/#projects"
-              onClick={() => setMenuOpen(false)}
-              className="text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-            >
-              Projects
-            </Link>
-            <Link
-              href="/#about"
-              onClick={() => setMenuOpen(false)}
-              className="text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-            >
-              About
-            </Link>
-            <Link
-              href="/blog"
-              onClick={() => setMenuOpen(false)}
-              className="text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-            >
-              Blog
-            </Link>
-            <Link
-              href="/#contact"
-              onClick={() => setMenuOpen(false)}
-              className="text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-            >
-              Contact
-            </Link>
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setMenuOpen(false)}
+                className={`text-sm font-medium ${
+                  isActive(link.href, link.exact)
+                    ? "text-violet-600 dark:text-violet-400"
+                    : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
             <Link
               href="/admin"
               onClick={() => setMenuOpen(false)}
-              className="text-sm font-medium text-violet-600 dark:text-violet-400"
+              className={`text-sm font-medium ${
+                pathname.startsWith("/admin")
+                  ? "text-violet-600 dark:text-violet-400"
+                  : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+              }`}
             >
               Admin
             </Link>
