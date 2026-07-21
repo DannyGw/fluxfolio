@@ -2,7 +2,7 @@ import { Router, Request, Response } from "express";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import { v4 as uuidv4 } from "uuid";
+import crypto from "crypto";
 
 const router = Router();
 
@@ -18,7 +18,7 @@ const imageStorage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, uploadsDir),
   filename: (_req, file, cb) => {
     const ext = path.extname(file.originalname);
-    cb(null, `${uuidv4()}${ext}`);
+    cb(null, `${crypto.randomUUID()}${ext}`);
   },
 });
 
@@ -41,7 +41,7 @@ const resumeStorage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, resumesDir),
   filename: (_req, file, cb) => {
     const ext = path.extname(file.originalname);
-    cb(null, `resume-${uuidv4()}${ext}`);
+    cb(null, `resume-${crypto.randomUUID()}${ext}`);
   },
 });
 
