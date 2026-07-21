@@ -25,7 +25,9 @@ const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:5173",
   "https://fluxfolio.vercel.app",
+  "https://fluxfolio-mu.vercel.app",
   ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+  ...(process.env.FRONTEND_URLS ? process.env.FRONTEND_URLS.split(",").map((s) => s.trim()) : []),
 ].filter(Boolean);
 
 app.use(cors({ origin: allowedOrigins }));
