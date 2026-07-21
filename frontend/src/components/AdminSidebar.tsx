@@ -2,17 +2,34 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { getContactMessages } from "@/lib/api";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: "home" },
   { href: "/admin/projects", label: "Projects", icon: "project" },
   { href: "/admin/blog", label: "Blog", icon: "blog" },
-  { href: "/admin/messages", label: "Messages", icon: "message" },
+  { href: "/admin/messages", label: "Messages", icon: "message", badge: true },
   { href: "/admin/profile", label: "Profile", icon: "profile" },
 ];
 
 export default function AdminSidebar() {
   const pathname = usePathname();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    const fetchUnread = async () => {
+      try {
+        const messages = await getContactMessages();
+        setUnreadCount(messages.filter((m) => !m.read).length);
+      } catch {
+        // Not authenticated yet — ignore
+      }
+    };
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 30_000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <aside className="hidden sm:flex flex-col w-64 min-h-screen border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 sticky top-0">
@@ -62,6 +79,11 @@ export default function AdminSidebar() {
                 </svg>
               )}
               {item.label}
+              {item.badge && unreadCount > 0 && (
+                <span className="ml-auto px-1.5 py-0.5 text-xs font-bold rounded-full bg-violet-600 text-white">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
             </Link>
           );
         })}

@@ -1,27 +1,72 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import ThemeToggle from "./ThemeToggle";
 
+const SECTION_IDS = ["projects", "about", "contact"];
+
 const navLinks = [
-  { href: "/", label: "Home", exact: true },
-  { href: "/#projects", label: "Projects", exact: false },
-  { href: "/#about", label: "About", exact: false },
-  { href: "/blog", label: "Blog", exact: false },
-  { href: "/#contact", label: "Contact", exact: false },
-  { href: "/admin", label: "Admin", exact: false },
+  { href: "/", label: "Home" },
+  { href: "/#projects", label: "Projects" },
+  { href: "/#about", label: "About" },
+  { href: "/blog", label: "Blog" },
+  { href: "/#contact", label: "Contact" },
+  { href: "/admin", label: "Admin" },
 ];
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("");
   const pathname = usePathname();
+  const isHome = pathname === "/";
 
-  const isActive = (href: string, exact?: boolean) => {
-    if (exact) return pathname === href;
-    if (href.startsWith("/#")) return pathname === "/";
-    return pathname.startsWith(href);
+  // Track which section is nearest the top of the viewport
+  useEffect(() => {
+    if (!isHome) {
+      setActiveSection("");
+      return;
+    }
+
+    const handleScroll = () => {
+      // Find which section the user is currently viewing
+      const viewportMid = window.innerHeight * 0.4;
+      let current = "";
+      for (const id of SECTION_IDS) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+        const top = el.getBoundingClientRect().top;
+        // Section is active when its top edge is in the upper 40% of the viewport
+        // OR when it's the last section and the page is scrolled to the bottom
+        if (top <= viewportMid) {
+          current = id;
+        }
+      }
+      // If at the very bottom of the page, activate the last section
+      if (!current) {
+        const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 20;
+        if (atBottom) {
+          current = SECTION_IDS[SECTION_IDS.length - 1];
+        }
+      }
+      setActiveSection(current);
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [isHome]);
+
+  const isActive = (link: { href: string; label: string }) => {
+    // Anchor links — active only when scrolled to that section on home page
+    if (link.href.startsWith("/#")) {
+      const id = link.href.slice(2);
+      return isHome && activeSection === id;
+    }
+    // Page links — active based on pathname
+    if (link.href === "/") return pathname === "/" && !activeSection;
+    return pathname.startsWith(link.href);
   };
 
   return (
@@ -43,7 +88,7 @@ export default function Header() {
                 key={link.href}
                 href={link.href}
                 className={`text-sm font-medium transition-colors ${
-                  isActive(link.href, link.exact)
+                  isActive(link)
                     ? "text-violet-600 dark:text-violet-400"
                     : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
                 }`}
@@ -97,7 +142,7 @@ export default function Header() {
                 href={link.href}
                 onClick={() => setMenuOpen(false)}
                 className={`text-sm font-medium ${
-                  isActive(link.href, link.exact)
+                  isActive(link)
                     ? "text-violet-600 dark:text-violet-400"
                     : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
                 }`}
@@ -105,17 +150,6 @@ export default function Header() {
                 {link.label}
               </Link>
             ))}
-            <Link
-              href="/admin"
-              onClick={() => setMenuOpen(false)}
-              className={`text-sm font-medium ${
-                pathname.startsWith("/admin")
-                  ? "text-violet-600 dark:text-violet-400"
-                  : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-              }`}
-            >
-              Admin
-            </Link>
           </nav>
         )}
       </div>

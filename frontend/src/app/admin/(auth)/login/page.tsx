@@ -65,10 +65,6 @@ export default function AdminLoginPage() {
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
-
-        <p className="mt-6 text-xs text-center text-zinc-400 dark:text-zinc-500">
-          Default: admin@fluxfolio.dev / admin123
-        </p>
       </div>
     </div>
   );

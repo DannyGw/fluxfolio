@@ -11,6 +11,7 @@ type Props = {
     slug: string;
     excerpt: string;
     content: string;
+    imageUrl?: string | null;
     tags: string[];
     published: boolean;
   };
@@ -25,6 +26,7 @@ export default function BlogForm({ initial }: Props) {
     slug: initial?.slug || "",
     excerpt: initial?.excerpt || "",
     content: initial?.content || "",
+    imageUrl: initial?.imageUrl || "",
     tags: initial?.tags.join(", ") || "",
     published: initial?.published || false,
   });
@@ -36,6 +38,7 @@ export default function BlogForm({ initial }: Props) {
 
     const data = {
       ...form,
+      imageUrl: form.imageUrl || null,
       tags: form.tags.split(",").map((s) => s.trim()).filter(Boolean),
     };
 
@@ -87,6 +90,11 @@ export default function BlogForm({ initial }: Props) {
           rows={12}
           className="w-full px-4 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all"
         />
+      </div>
+
+      <div>
+        <Label>Image URL</Label>
+        <Input value={form.imageUrl} onChange={(v) => setForm({ ...form, imageUrl: v })} placeholder="https://example.com/image.jpg" />
       </div>
 
       <div>

@@ -72,8 +72,14 @@ export default function RootLayout({
       lang="en"
       data-scroll-behavior="smooth"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `document.documentElement.classList.toggle("dark",localStorage.getItem("fluxfolio-theme")==="dark")`,
+          }}
+        />
         <Header />
         <main className="flex-1"><Providers>{children}</Providers></main>
         <footer className="border-t border-zinc-200 dark:border-zinc-800 py-8">
