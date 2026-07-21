@@ -10,33 +10,33 @@ async function main() {
   const existingProfile = await prisma.profile.findFirst();
   if (!existingProfile) {
     await prisma.profile.create({
-    data: {
-      name: "Your Name",
-      title: "Full Stack Developer",
-      bio: `Hi! I'm a passionate full-stack developer who loves building clean, modern web applications.
+      data: {
+        name: "Your Name",
+        title: "Full Stack Developer",
+        bio: `Hi! I'm a passionate full-stack developer who loves building clean, modern web applications.
 
 I specialize in **React, Node.js, and TypeScript**, and I'm always exploring new technologies to solve interesting problems.
 
 When I'm not coding, you'll find me [insert hobby here] or [insert another hobby here].`,
-      email: "hello@yourname.dev",
-      github: "https://github.com/yourusername",
-      linkedin: "https://linkedin.com/in/yourusername",
-      twitter: "https://twitter.com/yourusername",
-      website: "https://yourname.dev",
-      skills: [
-        "TypeScript",
-        "React",
-        "Next.js",
-        "Node.js",
-        "Express",
-        "PostgreSQL",
-        "Prisma",
-        "Tailwind CSS",
-        "Docker",
-        "Git",
-      ],
-    },
-  );
+        email: "hello@yourname.dev",
+        github: "https://github.com/yourusername",
+        linkedin: "https://linkedin.com/in/yourusername",
+        twitter: "https://twitter.com/yourusername",
+        website: "https://yourname.dev",
+        skills: [
+          "TypeScript",
+          "React",
+          "Next.js",
+          "Node.js",
+          "Express",
+          "PostgreSQL",
+          "Prisma",
+          "Tailwind CSS",
+          "Docker",
+          "Git",
+        ],
+      },
+    });
   } else {
     console.log("  - Profile already exists, skipping");
   }
